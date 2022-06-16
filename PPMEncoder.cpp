@@ -1,5 +1,5 @@
 #include "PPMEncoder.h"
-#include "BBTimer.hpp"
+#include "BBTimer.h"
 
 PPMEncoder ppmEncoder;
 BBTimer ppmTimer1(BB_TIMER4);

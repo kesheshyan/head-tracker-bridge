@@ -1,11 +1,14 @@
 #include <ArduinoBLE.h>
+#include <PPMReader.h>
 #include "PPMEncoder.h"
+#include "BBTimer.h"
 #include "opentxbt.h"
 
+#define PPM_INPUT_PIN 9
 #define PPM_OUTPUT_PIN 10
 
-const char* deviceServiceUuid = "FFF0";
-const char* deviceServiceCharacteristicUuid = "FFF6";
+#define RECEIVER_CHANNEL_NUM 3
+#define HEAD_TRACKER_CHANNEL_NUM 3
 
 typedef union
 {
@@ -13,10 +16,20 @@ typedef union
 } ppm_data_ut;
 
 ppm_data_ut ppmData;
+PPMReader ppmReader(PPM_INPUT_PIN, PPM_DEFAULT_CHANNELS);
+BBTimer ppmInputTimer(BB_TIMER3);
+
+const char* deviceServiceUuid = "FFF0";
+const char* deviceServiceCharacteristicUuid = "FFF6";
 
 
 void setup() {
   Serial.begin(9600);
+
+  // Setup PPM decoder
+  ppmInputTimer.setupTimer(PPM_FRAME_LENGTH_uS, ppmInputTimerCallback);
+  ppmInputTimer.timerStart();
+
 
   // Setup PPM encoder
   ppmEncoder.begin(PPM_OUTPUT_PIN);
@@ -113,11 +126,19 @@ void controlPeripheral(BLEDevice peripheral) {
           processTrainerByte(((uint8_t *)ppmData.bytes)[i]);
       }
       
-      for (byte i = 0; i < BT_CHANNEL_NUM; i++) {
-        ppmEncoder.setChannel(i, BtChannelsIn[i]);
+      for (byte channel = RECEIVER_CHANNEL_NUM; channel < RECEIVER_CHANNEL_NUM + HEAD_TRACKER_CHANNEL_NUM; ++channel) {
+        ppmEncoder.setChannel(channel, BtChannelsIn[channel - RECEIVER_CHANNEL_NUM]);
       }
     }
   }
 
   Serial.println("- Peripheral device disconnected!");
+}
+
+void ppmInputTimerCallback() {
+  // Print latest valid values from all channels
+  for (byte channel = 0; channel < RECEIVER_CHANNEL_NUM; ++channel) {
+    unsigned value = ppmReader.latestValidChannelValue(channel + 1, 0);
+    ppmEncoder.setChannel(channel, value);
+  } 
 }
