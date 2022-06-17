@@ -4,3 +4,7 @@ This is a complementary project for working with https://github.com/dlktdr/HeadT
 I put together a simplified diagram how this works https://lucid.app/publicSegments/view/032e0d9f-3284-4037-a631-9cb9eaaa9a30/image.png 
 
 The solution in this repo represents the "Magic Box" (or the bridge) part of the diagram.
+
+Video demonstration:
+https://www.youtube.com/watch?v=WX8GwnjS1vI
+https://www.youtube.com/watch?v=8wZ_mzhJ0sc
